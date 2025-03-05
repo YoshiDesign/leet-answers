@@ -1,55 +1,92 @@
 /**
  * @param {string[][]} accounts
  * @return {string[][]}
+ * Algo : 
+ * - Find out which arrays contain duplicates and map them first
+ * - - e.g. [[1,3],[2,7],[4,5,6]]
+ * - Merge the mapped arrays, sort, and finally prepend the account name
+ * - Win
+
+ * You are here:
+ * Make duplicates an object
+    e.g.
+    {
+        0: [1,2,3,4] // 0 has duplicates in 1,2,3 and 4
+                     // that way we'll skip a duplicate search in any of its values
+    }
  */
 var accountsMerge = function(accounts) {
-    let solution = []
-    let tmp = {}
 
-    // Used for labeling unique entries into the tmp object
-    let tmp_id = 0
+    var solution = []
+    var emaps = []
+    var already_searched_indexes = []
+    var duplicates = []
 
-    accounts.forEach( account => {
-        let [name, ...emails] = account
-        let new_entry = name + "_" + String(tmp_id)
+    // Create a map of indexes that have overlapping emails e.g. [[1,3],[4,7], ...]
+    accounts.forEach( (data_1, i) => {
 
-        // Do any of the account emails already belong to someone?
-        let _key = checkTmp(tmp, emails) 
+        accounts.forEach( (data_2, j) => {
+            
+            // Avoid redundant entries
+            if (i == j || already_searched_indexes.includes(j)){/*do nothing*/}
+            else {
+                let scopy_1 = data_1.slice(1)
+                let scopy_2 = data_2.slice(1)
+                let has_duplicate = scopy_1.some( item => scopy_2.includes(item))
 
-        if (_key !== false) {
+                if (has_duplicate) {
+                    duplicates = [...duplicates, [i, j]]
+                    console.log(`Duplicate found at ${i} and ${j}`)
+                }
 
-            let merged = tmp[_key].concat(emails)
-            tmp[_key] = merged
-
-            // Remove duplicates
-            tmp[_key] = tmp[_key].filter((item, i, self) => self.indexOf(item) === i) 
-            // [...new Set(tmp[_key])] // Another way to remove duplicates
-        }
-        else {
-            tmp[new_entry] = emails
-            tmp_id++
-        }
-
-    })
-
-    return Object.entries(tmp).map( ([key, val]) => [key.split("_")[0], ...val.sort()])
-
-};
-
-function checkTmp(tmp, emails) {
-
-    let found_match = 0;
-
-    Object.keys(tmp).forEach( key => {
-        emails.forEach( email => {
-
-            if (tmp[key].includes(email)) {
-                found_match = key 
+                already_searched_indexes.push(i)
             }
+
         })
     })
-    if (found_match) {
-        return found_match
-    }
-    return false
-}
+
+    console.log("Duplicates:\n", duplicates)
+
+    // Merge the arrays with duplicate emails found and add them to the solution output
+    duplicates.forEach( dup_data => {
+        let name = false
+        let tmp = []
+        let emails = []
+
+        dup_data.forEach( i => {
+            emails = [...emails, ...accounts[i].slice(1)]
+            if (!name) {
+                // Acquire the name
+                name = accounts[i][0]
+            }
+
+        })
+
+        // Build the solution entry
+        tmp = [name, ...emails.sort()]
+
+        // Remove duplicate entries of merged arrays
+        tmp = tmp.filter((item, index, self) => self.indexOf(item) === index)
+        // While I'm coding for educational purposes, here's another way to perform a unique constraint. 
+        // tmp = [...new Set(tmp)] 
+
+        solution.push(tmp)
+    })
+
+    let all_duplicates = duplicates.flat()
+
+    // Push the rest of the accounts onto the solution output
+    accounts.forEach( (account, i) => {
+        if(all_duplicates.includes(i)) {/*Do Nothing*/}
+        else {
+            // sort the emails
+            let name = account[0]
+            let emails = account.slice(1).sort()
+            solution.push([name, ...new Set(emails)])
+        }
+    })
+
+    console.log(solution)
+    return solution;
+
+};
