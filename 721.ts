@@ -1,66 +1,89 @@
 function accountsMerge(accounts: string[][]): string[][] {
+
+    // Create an object to track unique accounts and their emails
     let all_accounts: Record<string, string[]> = {};
 
+    /**
+     * First we'll create a lookup table for every account.
+     * By using this table we can identify all of our edge cases AoT,
+     * E.g. Same names w/ diff emails, same names w/ additional emails, etc.
+     */
     accounts.forEach( (account: string[]) => {
         let [is_new, _key] = verify_account(account, all_accounts)
         console.log("New name?: ", is_new, _key)
 
         if (!is_new) {
-            // Merge Emails
+            console.log("Updating existing <Record>...")
+            // Merge Emails into existing account record
+            all_accounts[_key] = [...all_accounts[_key], ...account.slice(1)]
         }
         else {
-            console.log(`Adding name: ${account[0]}`)
-            all_accounts[account[0]] = account.slice(1)
+            console.log(`Adding a new <Record>: ${account[0]}`)
+            // Initialize a new entry
+            all_accounts[_key] = account.slice(1)
         }
     })
 
-    console.log("all_accounts: ", all_accounts)
+    console.log(" -Success- all_accounts: ", all_accounts)
 
-    return [[""]]
+    return compile_answer(all_accounts) // You are here
 };
 
-function verify_account(account: string[], all_accounts: Record<string, string[]>) {
+function compile_answer(all_accounts: Record<string, string[]>) : string[][] {
+
+}
+
+/**
+ * Create a lookup table for account names and emails
+ */
+function verify_account(account: string[], all_accounts: Record<string, string[]>) : [boolean, string] {
 
     let account_name: string = account[0]
     let account_emails: string[] = account.slice(1)
-    console.log("Sanity: ", account_name, Object.keys(all_accounts))
-    console.log("name in object: ", (account_name in all_accounts))
-    if (account_name in all_accounts) {
-        console.log("Pre-Existing Name: ", account_name)
+    let all_verified = Object.entries(all_accounts) // [[name (our unique key), followed by emails], ...] just like the input
+    let is_new = true
+    let _key = account_name
+
+    // Look for an existing email in our object of organized (verified) accounts.
+    all_verified.forEach( (entry) => {
+        // Compare emails between new entry and all existing entries
+        if (account_emails.some( email => entry[1].includes(email) )) {
+            is_new = false
+            _key = entry[0]
+            console.log("Found a match!", account_name, "\nAt key: ", _key)
+        }
+    })
+
+    // console.log("Key: ", _key)
+    // console.log("is_new: ", is_new)
+    // console.log("account_name: ", account_name)
+ 
+    if (is_new) {
+        console.log("Creating new entry...")
         /**
-         * Compare existing emails to the incoming account's emails
+         * Apply a unique key to this entry
          */
-        let existing_emails = all_accounts[account_name]
+ 
+        let names = Object.keys(all_accounts)
 
-        let same_account: boolean = account_emails.some( (email:string) => {
-            return existing_emails.includes(email)
-        });
+        // Get an array of all of the names without our unique suffixes
+        let all_names = names.map( (name: string) => {
+            return name.split("_id")[0]
+        })
 
-        console.log("Same Account? ", same_account)
+        console.log("All Names: ", all_names)
 
-        // It's the same account, return the same key
-        if (same_account) {
-            return [false, account_name]
-        }
-        // Check how many times this name appears already so we can add another account to our all_accounts Object
-        else {
-            let names = Object.keys(all_accounts)
+        // Count how many times this name has already appeared
+        const n = all_names.filter( (name: string) => name === account_name ).length
 
-            // Get an array of all of the names without our unique suffixes
-            let all_names = names.map( (name: string) => {
-                return name.split("_")[0]
-            })
+        console.log(`Found ${account_name} ${n} time(s).`)
 
-            // Count how many times this name has already appeared
-            const n = all_names.filter( (name: string) => {name === account_name}).length
+        // Add a unique suffix and return the key
+        is_new = true
+        _key = account_name + "_id" + String(n)
 
-            console.log(`Found ${account_name} ${n} times.`)
-
-            // Add a unique suffix and return the key
-            return [true, account_name + "_copy_" + String(n)]
-        }
     }
 
-    // The incoming account's name is new, it cannot exist already
-    return [true, account_name]
+    return [is_new, _key]
+
 }
