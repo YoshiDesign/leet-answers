@@ -29,8 +29,26 @@ function accountsMerge(accounts: string[][]): string[][] {
     return compile_answer(all_accounts) // You are here
 };
 
+/**
+ * Remove duplicates, sort, and aggregate.
+ */
 function compile_answer(all_accounts: Record<string, string[]>) : string[][] {
 
+    let solution = []
+    Object.entries(all_accounts).forEach( entry => {
+        let name = entry[0].split("_id")[0]
+        let emails = entry[1]
+        
+        // Remove duplicates
+        emails = emails.filter( (email, i) => emails.indexOf(email) === i)
+        emails = emails.sort()
+
+        console.log("Final Object: ", [name, ...emails])
+        solution.push([name, ...emails])
+
+    })
+
+    return solution
 }
 
 /**
