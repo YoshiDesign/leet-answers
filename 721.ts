@@ -21,6 +21,8 @@ function accountsMerge(accounts: string[][]): string[][] {
         }
     })
 
+    console.log("First Pass Object:", all_accounts)
+
     return compile_answer(final_pass(all_accounts))
 };
 
@@ -29,6 +31,8 @@ function accountsMerge(accounts: string[][]): string[][] {
  */
 function final_pass(all_accounts: Record<string, string[]>) : Record<string, string[]> {
     
+    console.log("------ FINAL PASS -------")
+
     // There's no need to apply this function anymore
     if (Object.keys(all_accounts).length === 1) {
         return all_accounts
@@ -37,10 +41,12 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
     let new_records = {}            // Updated account records
     let updated_ids = []            // List of ids to avoid reiterating
     let found_duplicates = false    // Discovered accounts with a matching email
+    let buffer = []
 
     // Compare every index of our object to each other
     Object.entries(all_accounts).forEach( (account_i, i) => {
         let emails_i = account_i[1]
+
         if (updated_ids.includes(account_i[0])) { /* accounted for, continue */ }
         else {
             Object.entries(all_accounts).forEach( (account_j, j) => {
@@ -53,14 +59,18 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
                     // Check for duplicates
                     if (emails_i.some( email => emails_j.includes(email))) {
                         found_duplicates = true
+                        console.log("Found Duplicates!")
 
                         // Account has been accounted for
                         updated_ids.push(account_j[0])
 
                         new_emails = [...emails_i, ...emails_j] // Merge
+                        console.log("Merged: ", new_emails)
 
-                        // Update records
-                        new_records[account_i[0]] = new_emails
+                        new_records[account_i[0]] = new_emails 
+                        
+                        // Records were updated, re-run this function to account for the latest entries
+                        new_records = final_pass(new_records)
 
                     } else {
                         // No duplicate were found
@@ -71,10 +81,10 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
         }
     })
     
-    if (found_duplicates) {
-        console.log("Final Pass Detected a Duplicate...\nNew Records:", new_records)
-        new_records = final_pass(new_records)
-    }
+    // if (found_duplicates) {
+    //     console.log("Final Pass Detected a Duplicate...\nNew Records:", new_records)
+    //     new_records = 
+    // }
     console.log("Returning new records: ", new_records)
     return new_records
 }
