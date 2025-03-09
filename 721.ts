@@ -40,39 +40,35 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
 
     let new_records = all_accounts  // mutable account records
     let found_duplicates = false    // Discovered accounts with a matching email
-    let buffer = []
 
     // Compare every index of our object to each other
-    Object.entries(all_accounts).forEach( (account_i, i) => {
-        let emails_i = account_i[1]
+    for (const [key_i, emails_i] of Object.entries(all_accounts)) {
+        console.log("Scanning:\t", key_i)
 
-        Object.entries(all_accounts).forEach( (account_j, j) => {
-            if (i === j) { /* same entry, continue */ }
+        for (const [key_j, emails_j] of Object.entries(all_accounts)) {
+            if (key_i === key_j) { /* same entry, continue */ }
             else {
-                let emails_j = account_j[1]
-                let new_emails = []
+                let merged_emails = []
 
                 // Check for duplicates
                 if (emails_i.some( email => emails_j.includes(email))) {
                     found_duplicates = true
-                    console.log("Found Duplicates!")
+                    console.log("Found Duplicate in:\t", key_j)
 
-                    new_emails = [...emails_i, ...emails_j] // Merge
-                    console.log("Merged: ", new_emails)
+                    console.log("Merged: ", [...emails_i, ...emails_j])
+                    new_records[key_i] = [...emails_i, ...emails_j]   // Merge & Update
 
-                    new_records[account_i[0]] = new_emails 
-                    delete new_records[account_j[0]]
+                    delete new_records[key_j]
+
                     // Records were updated, re-run this function to account for the latest entries
-                    new_records = final_pass(new_records)
+                    return final_pass(new_records)
 
                 } else {
-                    // No duplicate were found
-                    new_records[account_i[0]] = account_i[1]
+                    // No updates
                 }
             }
-        })
-
-    })
+        }
+    }
     
     // if (found_duplicates) {
     //     console.log("Final Pass Detected a Duplicate...\nNew Records:", new_records)
