@@ -21,7 +21,7 @@ function accountsMerge(accounts: string[][]): string[][] {
         }
     })
 
-    console.log("First Pass Object:", all_accounts)
+    // console.log("First Pass Object:", all_accounts)
 
     return compile_answer(final_pass(all_accounts))
 };
@@ -31,7 +31,7 @@ function accountsMerge(accounts: string[][]): string[][] {
  */
 function final_pass(all_accounts: Record<string, string[]>) : Record<string, string[]> {
     
-    console.log("------ FINAL PASS -------\nINIT: ", all_accounts)
+    // console.log("------ FINAL PASS -------\nINIT: ", all_accounts)
 
     // There's no need to apply this function anymore
     if (Object.keys(all_accounts).length === 1) {
@@ -39,28 +39,25 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
     }
 
     let new_records = all_accounts  // mutable account records
-    let found_duplicates = false    // Discovered accounts with a matching email
 
     // Compare every index of our object to each other
     for (const [key_i, emails_i] of Object.entries(all_accounts)) {
-        console.log("Scanning:\t", key_i)
+        // console.log("Scanning:\t", key_i)
 
         for (const [key_j, emails_j] of Object.entries(all_accounts)) {
-            if (key_i === key_j) { /* same entry, continue */ }
+
+            if (key_i === key_j) { continue }
             else {
                 let merged_emails = []
 
                 // Check for duplicates
                 if (emails_i.some( email => emails_j.includes(email))) {
-                    found_duplicates = true
-                    console.log("Found Duplicate in:\t", key_j)
-
-                    console.log("Merged: ", [...emails_i, ...emails_j])
                     new_records[key_i] = [...emails_i, ...emails_j]   // Merge & Update
 
+                    // Remove the merged index
                     delete new_records[key_j]
 
-                    // Records were updated, re-run this function to account for the latest entries
+                    // Re-run with the updated records
                     return final_pass(new_records)
 
                 } else {
@@ -70,11 +67,6 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
         }
     }
     
-    // if (found_duplicates) {
-    //     console.log("Final Pass Detected a Duplicate...\nNew Records:", new_records)
-    //     new_records = 
-    // }
-    console.log("Returning new records: ", new_records)
     return new_records
 }
 
@@ -82,8 +74,9 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
  * Remove duplicates, sort, and aggregate.
  */
 function compile_answer(all_accounts: Record<string, string[]>) : string[][] {
-    console.log("Compiling answer...")
+    // console.log("Compiling answer...")
     let solution = []
+
     Object.entries(all_accounts).forEach( entry => {
         let name = entry[0].split("_id")[0]
         let emails = entry[1]
@@ -95,7 +88,7 @@ function compile_answer(all_accounts: Record<string, string[]>) : string[][] {
         solution.push([name, ...emails])
 
     })
-    console.log("Answer:", solution)
+    // console.log("Answer:", solution)
     return solution
 }
 
