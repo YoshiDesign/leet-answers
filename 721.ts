@@ -31,15 +31,14 @@ function accountsMerge(accounts: string[][]): string[][] {
  */
 function final_pass(all_accounts: Record<string, string[]>) : Record<string, string[]> {
     
-    console.log("------ FINAL PASS -------")
+    console.log("------ FINAL PASS -------\nINIT: ", all_accounts)
 
     // There's no need to apply this function anymore
     if (Object.keys(all_accounts).length === 1) {
         return all_accounts
     }
 
-    let new_records = {}            // Updated account records
-    let updated_ids = []            // List of ids to avoid reiterating
+    let new_records = all_accounts  // mutable account records
     let found_duplicates = false    // Discovered accounts with a matching email
     let buffer = []
 
@@ -47,38 +46,32 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
     Object.entries(all_accounts).forEach( (account_i, i) => {
         let emails_i = account_i[1]
 
-        if (updated_ids.includes(account_i[0])) { /* accounted for, continue */ }
-        else {
-            Object.entries(all_accounts).forEach( (account_j, j) => {
-                console.log("Scanned IDS: ", updated_ids)
-                if (i === j) { /* same entry, continue */ }
-                else {
-                    let emails_j = account_j[1]
-                    let new_emails = []
+        Object.entries(all_accounts).forEach( (account_j, j) => {
+            if (i === j) { /* same entry, continue */ }
+            else {
+                let emails_j = account_j[1]
+                let new_emails = []
 
-                    // Check for duplicates
-                    if (emails_i.some( email => emails_j.includes(email))) {
-                        found_duplicates = true
-                        console.log("Found Duplicates!")
+                // Check for duplicates
+                if (emails_i.some( email => emails_j.includes(email))) {
+                    found_duplicates = true
+                    console.log("Found Duplicates!")
 
-                        // Account has been accounted for
-                        updated_ids.push(account_j[0])
+                    new_emails = [...emails_i, ...emails_j] // Merge
+                    console.log("Merged: ", new_emails)
 
-                        new_emails = [...emails_i, ...emails_j] // Merge
-                        console.log("Merged: ", new_emails)
+                    new_records[account_i[0]] = new_emails 
+                    delete new_records[account_j[0]]
+                    // Records were updated, re-run this function to account for the latest entries
+                    new_records = final_pass(new_records)
 
-                        new_records[account_i[0]] = new_emails 
-                        
-                        // Records were updated, re-run this function to account for the latest entries
-                        new_records = final_pass(new_records)
-
-                    } else {
-                        // No duplicate were found
-                        new_records[account_i[0]] = account_i[1]
-                    }
+                } else {
+                    // No duplicate were found
+                    new_records[account_i[0]] = account_i[1]
                 }
-            })
-        }
+            }
+        })
+
     })
     
     // if (found_duplicates) {
