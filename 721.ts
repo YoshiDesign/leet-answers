@@ -21,8 +21,6 @@ function accountsMerge(accounts: string[][]): string[][] {
         }
     })
 
-    // console.log("First Pass Object:", all_accounts)
-
     return compile_answer(final_pass(all_accounts))
 };
 
@@ -30,8 +28,6 @@ function accountsMerge(accounts: string[][]): string[][] {
  * Recursive function 
  */
 function final_pass(all_accounts: Record<string, string[]>) : Record<string, string[]> {
-    
-    // console.log("------ FINAL PASS -------\nINIT: ", all_accounts)
 
     // There's no need to apply this function anymore
     if (Object.keys(all_accounts).length === 1) {
@@ -42,7 +38,6 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
 
     // Compare every index of our object to each other
     for (const [key_i, emails_i] of Object.entries(all_accounts)) {
-        // console.log("Scanning:\t", key_i)
 
         for (const [key_j, emails_j] of Object.entries(all_accounts)) {
 
@@ -74,7 +69,7 @@ function final_pass(all_accounts: Record<string, string[]>) : Record<string, str
  * Remove duplicates, sort, and aggregate.
  */
 function compile_answer(all_accounts: Record<string, string[]>) : string[][] {
-    // console.log("Compiling answer...")
+
     let solution = []
 
     Object.entries(all_accounts).forEach( entry => {
@@ -88,7 +83,7 @@ function compile_answer(all_accounts: Record<string, string[]>) : string[][] {
         solution.push([name, ...emails])
 
     })
-    // console.log("Answer:", solution)
+
     return solution
 }
 
