@@ -1,3 +1,7 @@
+/**
+ * Solution by Sergey - 10-13-2020
+ * This solution uses "Path Compression"
+ */
 var accountsMerge = function (accounts) {
     const parents = {};
     const email2name = {};
